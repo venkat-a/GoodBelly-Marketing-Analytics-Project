@@ -1,0 +1,116 @@
+---
+title: "Descriptive Statistics "
+author: "Venkata babu Aalapati"
+date: "11/19/2022"
+output: word_document
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(utf8)
+library(ggplot2)
+library(aod)
+library(outliers)
+library(readxl)
+library(Hmisc)
+```
+
+```{r}
+dplyr::summarize 
+#loading the data set  
+
+df_good_belly <- read_excel("Goodbelly_Project_Data.xlsx")
+#removing null values from the data set
+na.omit(df_good_belly)
+#viewing the columns of the data set
+head(df_good_belly)
+#Creating new dataframe with all numeric columns
+df_good_belly_numeric = df_good_belly[,c(4:12)]
+```
+
+```{r}
+#statitical summary of the numerical columns in the goddbelly data set
+summary(df_good_belly_numeric)
+```
+
+```{r}
+#Extract the values of the potential outliers based on the IQR criterion 
+ ggplot(df_good_belly) +
+  aes(x = "", y = ARP) +
+  geom_boxplot(fill = "#0c4c8a") +
+  theme_minimal()
+boxplot.stats(df_good_belly$ARP)$out
+
+```
+
+```{r}
+#Extract the values of the potential outliers based on the IQR criterion 
+ggplot(df_good_belly) +
+  aes(x = "", y = Sales) +
+  geom_boxplot(fill = "#0c4c2a") +
+  theme_minimal()
+boxplot.stats(df_good_belly$Sales)$out
+```
+Grubbs’s test:
+With box plots we observed some data points with high and low values in the data set, for futher analysis we conducted the grubs statitical test
+The Grubbs test allows to detect whether the highest or lowest value in a dataset is an outlier.
+The Grubbs test detects one outlier at a time (highest or lowest value),
+so the null and alternative hypotheses are as follows:
+H0: The highest value is not an outlier
+H1: The highest value is an outlier
+if we want to test the highest value, or: 
+H0: The lowest value is not an outlier
+H1: The lowest value is an outlier if we want to test the lowest value.
+
+As for any statistical test, if the p-value is less than the chosen significance threshold (generally alpha = 0.10 ) then the null hypothesis is rejected and we will conclude that the lowest/highest value is an outlier. On the contrary, if the p-value is greater or equal than the significance level, the null hypothesis is not rejected, and we will conclude that, based on the data, we do not reject the hypothesis that the lowest/highest value is not an outlier.
+
+```{r}
+test_high_arp <- grubbs.test(df_good_belly_numeric$ARP)
+test_high_arp
+test_low_arp<-grubbs.test(df_good_belly_numeric$ARP, opposite = TRUE)
+test_low_arp
+```
+
+```{r}
+test_high_sales <- grubbs.test(df_good_belly_numeric$Sales)
+test_high_sales
+test_low_sales<-grubbs.test(df_good_belly_numeric$Sales, opposite = TRUE)
+test_low_sales
+```
+
+
+
+
+```{r}
+#histogram density plot to understand sales 
+library(Hmisc)
+
+X<-df_good_belly$Sales
+hist(X,
+main="Distribution of Sales",
+xlab="Sales",
+xlim=c(0,1050),
+col="darkmagenta",
+freq=FALSE
+)
+#histogram frequency  plot to understand sales 
+hist.data.frame(df_good_belly['Sales'])
+#histogram density plot to understand ARP
+
+
+X<-df_good_belly$ARP
+hist(X,
+main="Distribution of ARP",
+xlab="Sales",
+xlim=c(2.5,6.5),
+col="darkorange",
+freq=FALSE
+)
+#histogram frequency  plot to understand ARP
+hist.data.frame(df_good_belly['ARP'])
+```
+
+```{r}
+
+```
+

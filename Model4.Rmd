@@ -1,0 +1,116 @@
+---
+title: "Model4"
+author: "Venkata babu Aalapati"
+date: "11/24/2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(utf8)
+library(ggplot2)
+library(aod)
+library(outliers)
+library(readxl)
+library(Hmisc)
+```
+
+```{r}
+#loading the data set
+df_good_belly <- read_excel("Goodbelly_Project_Data.xlsx")
+#removing null values from the data set
+na.omit(df_good_belly)
+```
+
+Model4:
+(Model3D With Y ′ = Y .75 Transform)
+Sales.75 = β0 + β1Region + β2Endcap + β3Demo + β4Demo1.3 + β5Demo4.5
++ β6Region ∗ Endcap + β7Demo ∗ Demo1.3 + β7Sales_Rep 
+
+
+```{r}
+#Building basic regression model
+Model4<-lm(formula = Sales^0.75 ~ Region + Demo + Demo1.3 + Demo4.5 +
+                Endcap + Region * Endcap + Demo * Demo1.3 + Sales_Rep, data=df_good_belly)
+
+#Understanding summary results of the model
+summary(Model4)
+
+# Plotting fitted residuals  model
+plot(Model4, which=1, col=c("blue"))
+
+# Plotting residuals and find the variation left by unexplained by the model
+df_good_belly$predicted <- predict(Model4)   # Save the predicted values
+df_good_belly$residuals <- residuals(Model4) # Save the residual values
+ggplot(df_good_belly, aes(x = Region, y = Sales)) +
+  geom_smooth(method = "lm", se = FALSE, color = "lightgrey") +    
+  geom_segment(aes(xend = Region, yend = predicted), alpha = .2) +      
+  geom_point(aes(color = abs(residuals), size = abs(residuals))) +  
+  scale_color_continuous(low = "green", high = "red") +             
+  guides(color = FALSE, size = FALSE) +                             
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+```
+
+```{r}
+#Generating CI intervals for coefficients with alpha 0.10
+confint(Model4,level = 0.90)
+confint.default(Model4)
+#Doing wald test for further analysis on coefficients
+wald.test(b = coef(Model4), Sigma = vcov(Model4), Terms = 1:27)
+#Generating CI intervals for odds ratio of coeeficents with alpha 0.10
+exp(coef(Model4))
+exp(cbind(OR = coef(Model4), confint(Model4,level = 0.90)))
+```
+
+```{r}
+#Further analysis with on residuals with diagnostic plots 
+opar <- par(mfrow = c(2,2), oma = c(0, 0, 1.1, 0)) 
+plot(Model4, las = 1)
+```
+
+Model4A 
+(Model4 - Demo:Demo1.3)
+Sales.75 = β0 + β1Region + β2Endcap + β3Demo + β4Demo1.3 + β5Demo4.5
++ β6Region ∗ Endcap + β7Sales_Rep 
+
+
+```{r}
+#Building basic regression model
+Model4A<-lm(formula = Sales^0.75 ~ Region + Demo + Demo1.3 + Demo4.5 +
+                Endcap + Region * Endcap + Sales_Rep, data=df_good_belly)
+#Understanding summary results of the model
+summary(Model4A)
+
+# Plotting fitted residuals  model
+plot(Model4A, which=1, col=c("blue"))
+
+# Plotting residuals and find the variation left by unexplained by the model
+df_good_belly$predicted <- predict(Model4A)   # Save the predicted values
+df_good_belly$residuals <- residuals(Model4A) # Save the residual values
+ggplot(df_good_belly, aes(x = Date, y = Sales)) +
+  geom_smooth(method = "lm", se = FALSE, color = "lightgrey") +    
+  geom_segment(aes(xend = Date, yend = predicted), alpha = .2) +      
+  geom_point(aes(color = abs(residuals), size = abs(residuals))) +  
+  scale_color_continuous(low = "green", high = "red") +             
+  guides(color = FALSE, size = FALSE) +                             
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+```
+
+```{r}
+#Generating CI intervals for coefficients with alpha 0.10
+confint(Model4A,level = 0.90)
+confint.default(Model4A)
+#Doing wald test for further analysis on coefficients
+wald.test(b = coef(Model4A), Sigma = vcov(Model4A), Terms = 1:26)
+#Generating CI intervals for odds ratio of coeeficents with alpha 0.10
+exp(coef(Model4A))
+exp(cbind(OR = coef(Model4A), confint(Model4A,level = 0.90)))
+```
+
+```{r}
+#Further analysis with on residuals with diagnostic plots 
+opar <- par(mfrow = c(2,2), oma = c(0, 0, 1.1, 0)) 
+plot(Model4A, las = 1)
+```
